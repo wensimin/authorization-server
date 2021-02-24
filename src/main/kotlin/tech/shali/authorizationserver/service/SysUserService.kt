@@ -22,7 +22,7 @@ class SysUserService(
 
     fun register(vo: RegisterVo): SysUser {
         val username = vo.username!!
-        if (userDao.findByUsername(username) != null) throw SystemException("用户已经存在")
+        userDao.findByUsername(username)?.let { throw SystemException("用户已经存在") }
         val user = SysUser(username, vo.password!!)
         user.password = passwordEncoder.encode(user.password)
         return userDao.save(user)

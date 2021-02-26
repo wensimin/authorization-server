@@ -17,6 +17,7 @@ import org.springframework.security.oauth2.server.authorization.config.ClientSet
 import java.security.KeyPairGenerator
 import java.security.interfaces.RSAPrivateKey
 import java.security.interfaces.RSAPublicKey
+import java.time.Duration
 import java.util.*
 
 
@@ -50,6 +51,10 @@ class AuthorizationServerConfig {
             .redirectUri("http://localhost:8080/login/oauth2/code/messaging-client-oidc")
             .scope(OidcScopes.OPENID)
             .scope(OidcScopes.PROFILE)
+            .tokenSettings { setting ->
+                setting.accessTokenTimeToLive(Duration.ofHours(1))
+                setting.refreshTokenTimeToLive(Duration.ofDays(30))
+            }
             // 需要用户允许 仅请求scope openid时不会触发
             .clientSettings { clientSettings: ClientSettings -> clientSettings.requireUserConsent(true) }
             .build()

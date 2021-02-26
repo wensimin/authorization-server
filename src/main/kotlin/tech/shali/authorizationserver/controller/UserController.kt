@@ -17,7 +17,6 @@ class UserController(private val sysUserService: SysUserService) {
         return sysUserService.info(principal)
     }
 
-
     @PostMapping
     fun register(@RequestBody @Valid registerVo: RegisterVo): SysUser {
         return sysUserService.register(registerVo)

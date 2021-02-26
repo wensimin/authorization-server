@@ -15,9 +15,10 @@ class SecurityConfig {
             .csrf().disable()
             .authorizeRequests { authorizeRequests ->
                 authorizeRequests.antMatchers("/login").permitAll()
-                authorizeRequests.antMatchers("/static/css/**").permitAll()
+                authorizeRequests.antMatchers("/actuator/health").permitAll()
+                authorizeRequests.antMatchers("/actuator/**").hasAuthority(SysAuth.ADMIN.name)
+                //register matcher
                 authorizeRequests.mvcMatchers(HttpMethod.POST, "/user/**").hasAuthority(SysAuth.ADMIN.name)
-                authorizeRequests.mvcMatchers("/user/**").authenticated()
                 authorizeRequests.anyRequest().authenticated()
             }.formLogin { config ->
                 config.loginPage("/login")

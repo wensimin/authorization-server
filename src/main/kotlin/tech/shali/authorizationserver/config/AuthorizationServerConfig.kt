@@ -40,26 +40,4 @@ class AuthorizationServerConfig {
         return JWKSource { jwkSelector, _ -> jwkSelector.select(jwkSet) }
     }
 
-    @Bean
-    fun registeredClientRepository(): RegisteredClientRepository? {
-        val registeredClient = RegisteredClient.withId(UUID.randomUUID().toString())
-            .clientId("messaging-client")
-            .clientSecret("secret")
-            .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-            .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
-            //允许回调的 urlList ? 全路径匹配? FIXME 待研究
-            .redirectUri("http://localhost:8080/login/oauth2/code/messaging-client-oidc")
-            .scope(OidcScopes.OPENID)
-            .scope(OidcScopes.PROFILE)
-            .tokenSettings { setting ->
-                setting.accessTokenTimeToLive(Duration.ofHours(1))
-                setting.refreshTokenTimeToLive(Duration.ofDays(30))
-            }
-            // 需要用户允许 仅请求scope openid时不会触发
-            .clientSettings { clientSettings: ClientSettings -> clientSettings.requireUserConsent(true) }
-            .build()
-        return InMemoryRegisteredClientRepository(registeredClient)
-    }
-
-
 }

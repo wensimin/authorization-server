@@ -1,5 +1,7 @@
 package tech.shali.authorizationserver.entity
 
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY
 import tech.shali.authorizationserver.entity.listener.DataEntityListener
 import java.util.*
 import javax.persistence.Column
@@ -10,9 +12,9 @@ import javax.persistence.MappedSuperclass
 @MappedSuperclass
 @EntityListeners(DataEntityListener::class)
 open class Data(
-    @Column(nullable = false) var createDate: Date = Date(),
-    @Column(nullable = false) var updateDate: Date = Date(),
-    @Id @Column(nullable = false) var id: String = UUID.randomUUID().toString()
+    @Id @Column(nullable = false) @JsonProperty(access = READ_ONLY) var id: String = UUID.randomUUID().toString(),
+    @Column(nullable = false) @JsonProperty(access = READ_ONLY) var createDate: Date = Date(),
+    @Column(nullable = false) @JsonProperty(access = READ_ONLY) var updateDate: Date = Date()
 ) {
 
     fun beforeUpdate() {

@@ -23,9 +23,11 @@ class SecurityConfig {
             .authorizeRequests { authorizeRequests ->
                 authorizeRequests.antMatchers("/login").permitAll()
                 authorizeRequests.antMatchers("/actuator/health").permitAll()
-                authorizeRequests.antMatchers("/actuator/**").hasAuthority(SysAuth.ADMIN.name)
-                // client 管理
-                authorizeRequests.antMatchers("/client/**").hasAuthority(SysAuth.ADMIN.name)
+                authorizeRequests.antMatchers(
+                    "/actuator/**", // 端点管理相关
+                    "/client/**", // 认证client
+                    "/user/auth/**" //用户 auth
+                ).hasAuthority(SysAuth.ADMIN.name)
                 //register matcher
                 authorizeRequests.mvcMatchers(HttpMethod.POST, "/user/**").hasAuthority(SysAuth.ADMIN.name)
                 authorizeRequests.anyRequest().authenticated()

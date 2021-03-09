@@ -15,7 +15,8 @@ import tech.shali.authorizationserver.pojo.exception.SystemException
 class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(value = [Exception::class])
-    fun exception(e: java.lang.Exception): ErrorResponse {
+    fun exception(e: Exception): ErrorResponse {
+        //TODO 按未知错误处理
         e.printStackTrace()
         return ErrorResponse(ErrorType.ERROR, e.localizedMessage)
     }

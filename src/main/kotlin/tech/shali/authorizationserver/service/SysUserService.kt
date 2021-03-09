@@ -6,6 +6,7 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import tech.shali.authorizationserver.dao.SysUserDao
 import tech.shali.authorizationserver.entity.SysUser
+import tech.shali.authorizationserver.pojo.AuthVo
 import tech.shali.authorizationserver.pojo.RegisterVo
 import tech.shali.authorizationserver.pojo.exception.SystemException
 import java.security.Principal
@@ -30,6 +31,12 @@ class SysUserService(
 
     fun info(principal: Principal): SysUser {
         return loadUserByUsername(principal.name)
+    }
+
+    fun addAuth(auth: AuthVo): SysUser {
+        val user = loadUserByUsername(auth.username!!)
+        user.auths.add(auth.auth!!)
+        return this.userDao.save(user)
     }
 
 }

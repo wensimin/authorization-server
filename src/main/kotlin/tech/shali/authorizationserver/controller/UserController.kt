@@ -1,8 +1,8 @@
 package tech.shali.authorizationserver.controller
 
-import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 import tech.shali.authorizationserver.entity.SysUser
+import tech.shali.authorizationserver.pojo.AuthVo
 import tech.shali.authorizationserver.pojo.RegisterVo
 import tech.shali.authorizationserver.service.SysUserService
 import java.security.Principal
@@ -21,4 +21,10 @@ class UserController(private val sysUserService: SysUserService) {
     fun register(@RequestBody @Valid registerVo: RegisterVo): SysUser {
         return sysUserService.register(registerVo)
     }
+
+    @PostMapping("auth")
+    fun addAuth(@RequestBody @Valid authVo: AuthVo): SysUser {
+        return sysUserService.addAuth(authVo)
+    }
+
 }

@@ -20,19 +20,19 @@ class SecurityConfig {
     fun defaultSecurityFilterChain(http: HttpSecurity): SecurityFilterChain? {
         http
             .csrf().disable()
-            .authorizeRequests { authorizeRequests ->
-                authorizeRequests.antMatchers("/login").permitAll()
-                authorizeRequests.antMatchers("/actuator/health").permitAll()
-                authorizeRequests.antMatchers(
+            .authorizeRequests().apply {
+                antMatchers("/login").permitAll()
+                antMatchers("/actuator/health").permitAll()
+                antMatchers(
                     "/actuator/**", // 端点管理相关
                     "/client/**", // 认证client
                     "/user/auth/**" //用户 auth
                 ).hasAuthority(SysAuth.ADMIN.name)
                 //register matcher
-                authorizeRequests.mvcMatchers(HttpMethod.POST, "/user/**").hasAuthority(SysAuth.ADMIN.name)
-                authorizeRequests.anyRequest().authenticated()
-            }.formLogin { config ->
-                config.loginPage("/login")
+                mvcMatchers(HttpMethod.POST, "/user/**").hasAuthority(SysAuth.ADMIN.name)
+                anyRequest().authenticated()
+            }.and().formLogin().apply {
+                loginPage("/login")
             }
         return http.build()
     }

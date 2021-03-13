@@ -25,6 +25,10 @@ import java.util.*
 @Import(OAuth2AuthorizationServerConfiguration::class)
 class AuthorizationServerConfig {
 
+    /**
+     * jwk目前与内存绑定，每次启动时创建
+     * 如果token store改为持久化，则这里也必须持久化
+     */
     @Bean
     fun jwkSource(): JWKSource<SecurityContext?> {
         val keyPairGenerator = KeyPairGenerator.getInstance("RSA")

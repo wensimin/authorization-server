@@ -4,7 +4,6 @@ import org.springframework.security.oauth2.core.AuthorizationGrantType
 import org.springframework.security.oauth2.core.oidc.OidcScopes
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository
-import org.springframework.security.oauth2.server.authorization.config.ClientSettings
 import org.springframework.stereotype.Service
 import tech.shali.authorizationserver.dao.Oauth2ClientDao
 import tech.shali.authorizationserver.entity.Oauth2Client
@@ -43,8 +42,8 @@ class Oauth2ClientService(private val oauth2ClientDao: Oauth2ClientDao) : Regist
                 setting.refreshTokenTimeToLive(Duration.ofDays(30))
             }
             // 需要用户允许 请求scope仅openid时不会触发
-            .clientSettings { clientSettings: ClientSettings ->
-                clientSettings.requireUserConsent(true)
+            .clientSettings {
+                it.requireUserConsent(true)
             }
             .build()
     }

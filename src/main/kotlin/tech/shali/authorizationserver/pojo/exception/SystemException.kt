@@ -5,5 +5,5 @@ import java.lang.RuntimeException
 
 class SystemException(
     override val message: String,
-    val type: ErrorType = ErrorType.ERROR
+    val error: ErrorType = ErrorType.ERROR
 ) : RuntimeException()

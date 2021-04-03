@@ -1,6 +1,8 @@
 package tech.shali.authorizationserver.config
 
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.PropertySource
 import org.springframework.http.HttpMethod
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
@@ -16,6 +18,8 @@ import tech.shali.authorizationserver.service.SysUserService
 
 @EnableWebSecurity
 class SecurityConfig {
+
+
     @Bean
     fun defaultSecurityFilterChain(http: HttpSecurity): SecurityFilterChain? {
         http
@@ -52,8 +56,9 @@ class SecurityConfig {
         }
     }
 
+    // 和temple库冲突 使用\$
     @Bean
-    fun providerSettings(): ProviderSettings? {
-        return ProviderSettings().issuer("http://127.0.0.1:81/authorization")
+    fun providerSettings(@Value("\${system.config.issuer}") url: String): ProviderSettings {
+        return ProviderSettings().issuer(url)
     }
 }

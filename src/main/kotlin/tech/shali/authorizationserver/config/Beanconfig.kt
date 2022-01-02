@@ -15,8 +15,6 @@ class BeanConfig {
      * @return 密码加密器
      */
     @Bean
-    fun passwordEncoder(): PasswordEncoder {
-        return BCryptPasswordEncoder()
-    }
+    fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
 
 }

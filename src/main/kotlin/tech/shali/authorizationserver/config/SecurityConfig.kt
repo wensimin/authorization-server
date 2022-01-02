@@ -58,7 +58,6 @@ class SecurityConfig {
 
     // 和temple库冲突 使用\$
     @Bean
-    fun providerSettings(@Value("\${system.config.issuer}") url: String): ProviderSettings {
-        return ProviderSettings().issuer(url)
-    }
+    fun providerSettings(@Value("\${system.config.issuer}") url: String): ProviderSettings =
+        ProviderSettings.builder().issuer(url).build()
 }

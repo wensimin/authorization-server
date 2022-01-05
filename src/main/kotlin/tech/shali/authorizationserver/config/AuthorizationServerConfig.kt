@@ -35,7 +35,7 @@ class AuthorizationServerConfig {
     /**
      * jwk目前与内存绑定，每次启动时创建
      * 如果token store改为持久化，则这里也必须持久化
-     * fixme token已持久化,此处先观察
+     * fixme token已持久化,此处先观察 当前猜想为更换key会使客户端需要重新请求acc token
      */
     @Bean
     fun jwkSource(): JWKSource<SecurityContext?> {

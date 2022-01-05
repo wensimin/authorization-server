@@ -1,6 +1,8 @@
 package tech.shali.authorizationserver.service
 
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.oauth2.core.AuthorizationGrantType
+import org.springframework.security.oauth2.core.ClientAuthenticationMethod
 import org.springframework.security.oauth2.core.oidc.OidcScopes
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository
@@ -12,10 +14,14 @@ import tech.shali.authorizationserver.entity.Oauth2Client
 import java.time.Duration
 
 @Service
-class Oauth2ClientService(private val oauth2ClientDao: Oauth2ClientDao) : RegisteredClientRepository {
+class Oauth2ClientService(
+    private val oauth2ClientDao: Oauth2ClientDao,
+    private val passwordEncoder: PasswordEncoder
+) :
+    RegisteredClientRepository {
 
     override fun save(registeredClient: RegisteredClient) {
-        oauth2ClientDao.save(
+        save(
             Oauth2Client(
                 registeredClient.clientId,
                 registeredClient.clientSecret!!,
@@ -33,8 +39,10 @@ class Oauth2ClientService(private val oauth2ClientDao: Oauth2ClientDao) : Regist
         return oauth2ClientDao.findByClientId(clientId)?.let { e -> getClient(e) }
     }
 
-    fun create(oauth2Client: Oauth2Client): Oauth2Client {
-        return oauth2ClientDao.save(oauth2Client)
+    fun save(oauth2Client: Oauth2Client): Oauth2Client {
+        return oauth2ClientDao.save(oauth2Client.apply {
+            this.clientSecret = passwordEncoder.encode(clientSecret)
+        })
     }
 
     /**

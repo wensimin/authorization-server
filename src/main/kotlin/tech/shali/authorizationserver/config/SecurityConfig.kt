@@ -2,10 +2,11 @@ package tech.shali.authorizationserver.config
 
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.PropertySource
+import org.springframework.core.annotation.Order
 import org.springframework.http.HttpMethod
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
+import org.springframework.security.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration
 import org.springframework.security.core.Authentication
 import org.springframework.security.oauth2.core.OAuth2TokenType
 import org.springframework.security.oauth2.server.authorization.JwtEncodingContext
@@ -41,6 +42,7 @@ class SecurityConfig {
         return http.build()
     }
 
+
     /**
      * 自定义token
      * 把用户的auth添加进去
@@ -51,13 +53,10 @@ class SecurityConfig {
             if (context.tokenType == OAuth2TokenType.ACCESS_TOKEN) {
                 val claim: Authentication = context.getPrincipal()
                 val user = userService.loadUserByUsername(claim.name)
-                context.claims.claim("auth", user.auths)
+                context.claims.claim("auth", user.authorities)
             }
         }
     }
 
-    // 和temple库冲突 使用\$
-    @Bean
-    fun providerSettings(@Value("\${system.config.issuer}") url: String): ProviderSettings =
-        ProviderSettings.builder().issuer(url).build()
+
 }

@@ -4,30 +4,42 @@ import com.nimbusds.jose.jwk.JWKSet
 import com.nimbusds.jose.jwk.RSAKey
 import com.nimbusds.jose.jwk.source.JWKSource
 import com.nimbusds.jose.proc.SecurityContext
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Import
+import org.springframework.core.Ordered
+import org.springframework.core.annotation.Order
+import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration
-import org.springframework.security.oauth2.core.AuthorizationGrantType
-import org.springframework.security.oauth2.core.oidc.OidcScopes
-import org.springframework.security.oauth2.server.authorization.client.InMemoryRegisteredClientRepository
-import org.springframework.security.oauth2.server.authorization.client.RegisteredClient
+import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository
-import org.springframework.security.oauth2.server.authorization.config.ClientSettings
+import org.springframework.security.oauth2.server.authorization.config.ProviderSettings
+import org.springframework.security.web.SecurityFilterChain
+import tech.shali.authorizationserver.dao.AuthorizationDao
+import tech.shali.authorizationserver.service.JdbcOAuth2AuthorizationService
 import java.security.KeyPairGenerator
 import java.security.interfaces.RSAPrivateKey
 import java.security.interfaces.RSAPublicKey
-import java.time.Duration
 import java.util.*
 
 
-@Configuration
-@Import(OAuth2AuthorizationServerConfiguration::class)
+@Configuration(proxyBeanMethods = false)
 class AuthorizationServerConfig {
+
+    @Bean
+    @Order(Ordered.HIGHEST_PRECEDENCE)
+    @Throws(Exception::class)
+    fun authorizationServerSecurityFilterChain(http: HttpSecurity): SecurityFilterChain? {
+        OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http)
+        return http.formLogin().apply {
+            loginPage("/login")
+        }.and().build()
+    }
 
     /**
      * jwk目前与内存绑定，每次启动时创建
      * 如果token store改为持久化，则这里也必须持久化
+     * fixme token即将持久化
      */
     @Bean
     fun jwkSource(): JWKSource<SecurityContext?> {
@@ -44,4 +56,9 @@ class AuthorizationServerConfig {
         return JWKSource { jwkSelector, _ -> jwkSelector.select(jwkSet) }
     }
 
+
+    // 和temple库冲突 使用\$
+    @Bean
+    fun providerSettings(@Value("\${system.config.issuer}") url: String): ProviderSettings =
+        ProviderSettings.builder().issuer(url).build()
 }

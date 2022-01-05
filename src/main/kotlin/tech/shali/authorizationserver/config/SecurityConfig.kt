@@ -49,7 +49,7 @@ class SecurityConfig {
             if (context.tokenType == OAuth2TokenType.ACCESS_TOKEN) {
                 val claim: Authentication = context.getPrincipal()
                 val user = userService.loadUserByUsername(claim.name)
-                context.claims.claim("auth", user.authorities.map { SysAuth.valueOf(it.authority) }.toSet())
+                context.claims.claim("auth", user.authorities.map { it.authority }.toSet())
             }
         }
     }

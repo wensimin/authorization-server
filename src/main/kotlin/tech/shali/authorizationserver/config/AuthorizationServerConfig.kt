@@ -11,12 +11,8 @@ import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration
-import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService
-import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository
 import org.springframework.security.oauth2.server.authorization.config.ProviderSettings
 import org.springframework.security.web.SecurityFilterChain
-import tech.shali.authorizationserver.dao.AuthorizationDao
-import tech.shali.authorizationserver.service.JdbcOAuth2AuthorizationService
 import java.security.KeyPairGenerator
 import java.security.interfaces.RSAPrivateKey
 import java.security.interfaces.RSAPublicKey
@@ -39,7 +35,7 @@ class AuthorizationServerConfig {
     /**
      * jwk目前与内存绑定，每次启动时创建
      * 如果token store改为持久化，则这里也必须持久化
-     * fixme token即将持久化
+     * fixme token已持久化,此处先观察
      */
     @Bean
     fun jwkSource(): JWKSource<SecurityContext?> {

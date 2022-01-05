@@ -1,18 +1,12 @@
 package tech.shali.authorizationserver.service
 
-import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.Module
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
-import org.hibernate.collection.internal.PersistentSet
+import com.fasterxml.jackson.module.kotlin.readValue
 import org.springframework.dao.DataRetrievalFailureException
 import org.springframework.security.jackson2.SecurityJackson2Modules
-import org.springframework.security.oauth2.core.AuthorizationGrantType
-import org.springframework.security.oauth2.core.OAuth2AccessToken
-import org.springframework.security.oauth2.core.OAuth2AuthorizationCode
-import org.springframework.security.oauth2.core.OAuth2RefreshToken
-import org.springframework.security.oauth2.core.OAuth2Token
-import org.springframework.security.oauth2.core.OAuth2TokenType
+import org.springframework.security.oauth2.core.*
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames
 import org.springframework.security.oauth2.core.oidc.OidcIdToken
 import org.springframework.security.oauth2.server.authorization.OAuth2Authorization
@@ -23,13 +17,12 @@ import org.springframework.stereotype.Service
 import org.springframework.util.StringUtils
 import tech.shali.authorizationserver.dao.AuthorizationDao
 import tech.shali.authorizationserver.entity.AuthorizationToken
-import tech.shali.authorizationserver.entity.SysUser
-import tech.shali.authorizationserver.entity.mixin.HashSetMixin
-import tech.shali.authorizationserver.entity.mixin.SysUserMixin
-import java.security.Principal
 import java.time.Instant
 import java.util.function.Consumer
 
+/**
+ * auth token  持久化service
+ */
 @Service
 class JdbcOAuth2AuthorizationService(
     private val authorizationRepository: AuthorizationDao,
@@ -42,8 +35,6 @@ class JdbcOAuth2AuthorizationService(
         val securityModules: MutableList<Module>? = SecurityJackson2Modules.getModules(classLoader)
         objectMapper.registerModule(KotlinModule())
         objectMapper.registerModules(securityModules)
-//        objectMapper.addMixIn(PersistentSet::class.java, HashSetMixin::class.java)
-//        objectMapper.addMixIn(SysUser::class.java, SysUserMixin::class.java)
         objectMapper.registerModule(OAuth2AuthorizationServerJackson2Module())
     }
 
@@ -87,24 +78,13 @@ class JdbcOAuth2AuthorizationService(
             ?: throw DataRetrievalFailureException(
                 "The RegisteredClient with id '${entity.registeredClientId}' was not found in the RegisteredClientRepository."
             )
-
-        val attrMap = parseMap(entity.attributes).toMutableMap()
-        // fixme 替换token
-//        val oldToken = (attrMap["java.security.Principal"] as UsernamePasswordAuthenticationToken)
-//        val newToken = UsernamePasswordAuthenticationToken(
-//            sysUserService.loadUserByUsername(entity.principalName),
-//            oldToken.credentials,
-//            oldToken.authorities
-//        )
-//        attrMap["java.security.Principal"] = newToken
-
         val builder = OAuth2Authorization.withRegisteredClient(registeredClient)
             .id(entity.id)
             .principalName(entity.principalName)
             .authorizationGrantType(resolveAuthorizationGrantType(entity.authorizationGrantType))
             .attributes { attributes: MutableMap<String?, Any?> ->
                 attributes.putAll(
-                    attrMap
+                    parseMap(entity.attributes)
                 )
             }
         if (entity.state != null) {
@@ -168,9 +148,6 @@ class JdbcOAuth2AuthorizationService(
     }
 
     private fun toEntity(authorization: OAuth2Authorization): AuthorizationToken {
-//        val user = getToken(authorization).principal = null
-//        // fixme debug
-//        objectMapper.writeValueAsString(user)
         val entity = AuthorizationToken(
             authorization.id,
             authorization.registeredClientId,
@@ -245,9 +222,7 @@ class JdbcOAuth2AuthorizationService(
 
     private fun parseMap(data: String?): Map<String, Any> {
         return try {
-            if (data == null) emptyMap() else objectMapper.readValue(
-                data,
-                object : TypeReference<Map<String, Any>>() {})
+            if (data == null) emptyMap() else objectMapper.readValue(data)
         } catch (ex: Exception) {
             throw IllegalArgumentException(ex.message, ex)
         }

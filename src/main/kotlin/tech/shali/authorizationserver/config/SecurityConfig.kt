@@ -1,17 +1,13 @@
 package tech.shali.authorizationserver.config
 
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
-import org.springframework.core.annotation.Order
 import org.springframework.http.HttpMethod
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
-import org.springframework.security.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration
 import org.springframework.security.core.Authentication
 import org.springframework.security.oauth2.core.OAuth2TokenType
 import org.springframework.security.oauth2.server.authorization.JwtEncodingContext
 import org.springframework.security.oauth2.server.authorization.OAuth2TokenCustomizer
-import org.springframework.security.oauth2.server.authorization.config.ProviderSettings
 import org.springframework.security.web.SecurityFilterChain
 import tech.shali.authorizationserver.entity.SysAuth
 import tech.shali.authorizationserver.service.SysUserService
@@ -53,7 +49,7 @@ class SecurityConfig {
             if (context.tokenType == OAuth2TokenType.ACCESS_TOKEN) {
                 val claim: Authentication = context.getPrincipal()
                 val user = userService.loadUserByUsername(claim.name)
-                context.claims.claim("auth", user.authorities)
+                context.claims.claim("auth", user.authorities.map { SysAuth.valueOf(it.authority) }.toSet())
             }
         }
     }

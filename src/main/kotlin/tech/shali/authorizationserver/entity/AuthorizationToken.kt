@@ -6,7 +6,9 @@ import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.Lob
 
-
+/**
+ * 持久化token实体
+ */
 @Entity
 class AuthorizationToken(
     override var id: String,

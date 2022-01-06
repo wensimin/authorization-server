@@ -14,6 +14,6 @@ class Oauth2ClientController(private val oauth2ClientService: Oauth2ClientServic
 
     @PostMapping
     fun create(@RequestBody @Valid oauth2Client: Oauth2Client): Oauth2Client {
-        return oauth2ClientService.save(oauth2Client)
+        return oauth2ClientService.create(oauth2Client)
     }
 }

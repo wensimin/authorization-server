@@ -33,5 +33,7 @@ logging:
   level:
     root: warn
     tech.shali.authorizationserver: debug
+    org.hibernate.SQL: debug
+    org.hibernate.type.descriptor.sql.BasicBinder: trace
   file:
     name: log/log.log

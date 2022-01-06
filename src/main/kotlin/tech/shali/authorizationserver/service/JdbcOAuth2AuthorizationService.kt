@@ -25,7 +25,7 @@ import java.util.function.Consumer
  */
 @Service
 class JdbcOAuth2AuthorizationService(
-    private val authorizationRepository: AuthorizationDao,
+    private val authorizationDao: AuthorizationDao,
     private val registeredClientRepository: RegisteredClientRepository
 ) : OAuth2AuthorizationService {
     private val objectMapper = ObjectMapper()
@@ -39,33 +39,33 @@ class JdbcOAuth2AuthorizationService(
     }
 
     override fun save(authorization: OAuth2Authorization) {
-        this.authorizationRepository.save(toEntity(authorization))
+        this.authorizationDao.save(toEntity(authorization))
     }
 
     override fun remove(authorization: OAuth2Authorization) {
-        this.authorizationRepository.deleteById(authorization.id)
+        this.authorizationDao.deleteById(authorization.id)
     }
 
     override fun findById(id: String): OAuth2Authorization? {
-        return this.authorizationRepository.findById(id).map(this::toObject).orElse(null)
+        return this.authorizationDao.findById(id).map(this::toObject).orElse(null)
     }
 
     override fun findByToken(token: String, tokenType: OAuth2TokenType?): OAuth2Authorization? {
         return when {
             tokenType == null -> {
-                authorizationRepository.findByStateOrAuthorizationCodeOrAccessTokenOrRefreshToken(token)
+                authorizationDao.findByStateOrAuthorizationCodeOrAccessTokenOrRefreshToken(token)
             }
             OAuth2ParameterNames.STATE == tokenType.value -> {
-                authorizationRepository.findByState(token)
+                authorizationDao.findByState(token)
             }
             OAuth2ParameterNames.CODE == tokenType.value -> {
-                authorizationRepository.findByAuthorizationCode(token)
+                authorizationDao.findByAuthorizationCode(token)
             }
             OAuth2ParameterNames.ACCESS_TOKEN == tokenType.value -> {
-                authorizationRepository.findByAccessToken(token)
+                authorizationDao.findByAccessToken(token)
             }
             OAuth2ParameterNames.REFRESH_TOKEN == tokenType.value -> {
-                authorizationRepository.findByRefreshToken(token)
+                authorizationDao.findByRefreshToken(token)
             }
             else -> null
         }?.let {
@@ -250,5 +250,12 @@ class JdbcOAuth2AuthorizationService(
             // Custom authorization grant type
             else -> AuthorizationGrantType(authorizationGrantType)
         }
+    }
+
+    /**
+     * 删除过期token
+     */
+    fun deleteExpiresToken() {
+        authorizationDao.deleteExpiresToken(Instant.now())
     }
 }

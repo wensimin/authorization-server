@@ -2,7 +2,6 @@ package tech.shali.authorizationserver.service
 
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.oauth2.core.AuthorizationGrantType
-import org.springframework.security.oauth2.core.ClientAuthenticationMethod
 import org.springframework.security.oauth2.core.oidc.OidcScopes
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository
@@ -11,23 +10,27 @@ import org.springframework.security.oauth2.server.authorization.config.TokenSett
 import org.springframework.stereotype.Service
 import tech.shali.authorizationserver.dao.Oauth2ClientDao
 import tech.shali.authorizationserver.entity.Oauth2Client
+import tech.shali.authorizationserver.entity.SysAuth
+import tech.shali.authorizationserver.entity.SysUser
 import java.time.Duration
 
 @Service
 class Oauth2ClientService(
     private val oauth2ClientDao: Oauth2ClientDao,
-    private val passwordEncoder: PasswordEncoder
+    private val passwordEncoder: PasswordEncoder,
+    private val sysUserService: SysUserService
 ) :
     RegisteredClientRepository {
 
     override fun save(registeredClient: RegisteredClient) {
-        save(
+        create(
             Oauth2Client(
                 registeredClient.clientId,
                 registeredClient.clientSecret!!,
-                // 目前使用单一string存储redirect url 并且有超长问题
-                registeredClient.redirectUris.first()
-            )
+                registeredClient.redirectUris.joinToString(",")
+            ).apply {
+                id = registeredClient.id
+            }
         )
     }
 
@@ -39,7 +42,14 @@ class Oauth2ClientService(
         return oauth2ClientDao.findByClientId(clientId)?.let { e -> getClient(e) }
     }
 
-    fun save(oauth2Client: Oauth2Client): Oauth2Client {
+    /**
+     * new client
+     */
+    fun create(oauth2Client: Oauth2Client): Oauth2Client {
+        //需要同步建立user
+        val clientUser =
+            SysUser(oauth2Client.clientId, oauth2Client.clientSecret).apply { auths.add(SysAuth.CLIENT) }
+        sysUserService.register(clientUser)
         return oauth2ClientDao.save(oauth2Client.apply {
             this.clientSecret = passwordEncoder.encode(clientSecret)
         })
@@ -55,7 +65,10 @@ class Oauth2ClientService(
             .clientSecret(oauth2Client.clientSecret)
             .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
             .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
-            .redirectUri(oauth2Client.redirectUri)
+            .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
+            .redirectUris {
+                it.addAll(oauth2Client.redirectUri.split(","))
+            }
             .scope(OidcScopes.OPENID)
             .scope(OidcScopes.PROFILE)
             .tokenSettings(

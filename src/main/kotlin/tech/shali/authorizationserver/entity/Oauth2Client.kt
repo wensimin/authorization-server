@@ -1,9 +1,11 @@
 package tech.shali.authorizationserver.entity
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import org.hibernate.annotations.Type
 import org.hibernate.validator.constraints.Length
 import javax.persistence.Column
 import javax.persistence.Entity
+import javax.persistence.Lob
 import javax.validation.constraints.NotEmpty
 
 /**
@@ -23,6 +25,8 @@ class Oauth2Client(
      * 当前路径匹配
      */
     @Column(nullable = false)
+    @Type(type = "org.hibernate.type.TextType")
+    @Lob
     @get:NotEmpty
     val redirectUri: String
 ) : Data()

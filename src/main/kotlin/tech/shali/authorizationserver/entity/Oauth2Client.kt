@@ -21,6 +21,7 @@ class Oauth2Client(
     @get:Length(min = 8, max = 200)
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     var clientSecret: String,
+
     /**
      * 当前路径匹配
      */
@@ -28,5 +29,10 @@ class Oauth2Client(
     @Type(type = "org.hibernate.type.TextType")
     @Lob
     @get:NotEmpty
-    val redirectUri: String
+    val redirectUri: String,
+    /**
+     * 是否允许client模式登录
+     */
+    @Column(nullable = false)
+    var clientCredentials: Boolean = false
 ) : Data()

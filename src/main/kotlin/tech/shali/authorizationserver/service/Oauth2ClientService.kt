@@ -29,6 +29,8 @@ class Oauth2ClientService(
                 registeredClient.clientSecret!!,
                 registeredClient.redirectUris.joinToString(",")
             ).apply {
+                clientCredentials =
+                    registeredClient.authorizationGrantTypes.contains(AuthorizationGrantType.CLIENT_CREDENTIALS)
                 id = registeredClient.id
             }
         )
@@ -46,10 +48,12 @@ class Oauth2ClientService(
      * new client
      */
     fun create(oauth2Client: Oauth2Client): Oauth2Client {
-        //需要同步建立user
-        val clientUser =
-            SysUser(oauth2Client.clientId, oauth2Client.clientSecret).apply { auths.add(SysAuth.CLIENT) }
-        sysUserService.register(clientUser)
+        // 如果允许client模式登录则需要同时建立user
+        if (oauth2Client.clientCredentials) {
+            val clientUser =
+                SysUser(oauth2Client.clientId, oauth2Client.clientSecret).apply { auths.add(SysAuth.CLIENT) }
+            sysUserService.register(clientUser)
+        }
         return oauth2ClientDao.save(oauth2Client.apply {
             this.clientSecret = passwordEncoder.encode(clientSecret)
         })
@@ -58,28 +62,28 @@ class Oauth2ClientService(
     /**
      * 使用默认配置构建client
      * 配置目前hard code
-     * FIXME client自定义部分，目前有权限风险
+     *
      */
     private fun getClient(oauth2Client: Oauth2Client): RegisteredClient? {
-        return RegisteredClient.withId(oauth2Client.id)
-            .clientId(oauth2Client.clientId)
-            .clientSecret(oauth2Client.clientSecret)
-            .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-            .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
-            .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
-            .redirectUris {
+        return RegisteredClient.withId(oauth2Client.id).apply {
+            clientId(oauth2Client.clientId)
+            clientSecret(oauth2Client.clientSecret)
+            authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+            authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
+            if (oauth2Client.clientCredentials) authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
+            redirectUris {
                 it.addAll(oauth2Client.redirectUri.split(","))
             }
-            .scope(OidcScopes.OPENID)
-            .tokenSettings(
+            scope(OidcScopes.OPENID)
+            tokenSettings(
                 TokenSettings.builder().apply {
                     accessTokenTimeToLive(Duration.ofHours(1))
                     refreshTokenTimeToLive(Duration.ofDays(30))
                 }.build()
             )
             // 需要用户允许 请求scope仅openid时不会触发
-            .clientSettings(ClientSettings.builder().requireAuthorizationConsent(true).build())
-            .build()
+            clientSettings(ClientSettings.builder().requireAuthorizationConsent(true).build())
+        }.build()
     }
 
 }

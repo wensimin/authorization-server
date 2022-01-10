@@ -58,6 +58,7 @@ class Oauth2ClientService(
     /**
      * 使用默认配置构建client
      * 配置目前hard code
+     * FIXME client自定义部分，目前有权限风险
      */
     private fun getClient(oauth2Client: Oauth2Client): RegisteredClient? {
         return RegisteredClient.withId(oauth2Client.id)

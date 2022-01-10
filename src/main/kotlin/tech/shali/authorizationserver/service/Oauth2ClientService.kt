@@ -70,7 +70,6 @@ class Oauth2ClientService(
                 it.addAll(oauth2Client.redirectUri.split(","))
             }
             .scope(OidcScopes.OPENID)
-            .scope(OidcScopes.PROFILE)
             .tokenSettings(
                 TokenSettings.builder().apply {
                     accessTokenTimeToLive(Duration.ofHours(1))

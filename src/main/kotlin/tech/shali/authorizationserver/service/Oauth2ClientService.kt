@@ -23,17 +23,7 @@ class Oauth2ClientService(
     RegisteredClientRepository {
 
     override fun save(registeredClient: RegisteredClient) {
-        create(
-            Oauth2Client(
-                registeredClient.clientId,
-                registeredClient.clientSecret!!,
-                registeredClient.redirectUris.joinToString(",")
-            ).apply {
-                clientCredentials =
-                    registeredClient.authorizationGrantTypes.contains(AuthorizationGrantType.CLIENT_CREDENTIALS)
-                id = registeredClient.id
-            }
-        )
+        throw TODO("未实现new client")
     }
 
     override fun findById(id: String): RegisteredClient? {

@@ -13,6 +13,9 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration
 import org.springframework.security.oauth2.server.authorization.config.ProviderSettings
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.web.cors.CorsConfiguration
+import org.springframework.web.cors.CorsConfigurationSource
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 import java.security.KeyPairGenerator
 import java.security.interfaces.RSAPrivateKey
 import java.security.interfaces.RSAPublicKey
@@ -25,12 +28,27 @@ class AuthorizationServerConfig {
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
     @Throws(Exception::class)
-    fun authorizationServerSecurityFilterChain(http: HttpSecurity): SecurityFilterChain? {
-        OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http)
+    fun authorizationServerSecurityFilterChain(
+        http: HttpSecurity
+    ): SecurityFilterChain? {
+        OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(
+            http.cors().configurationSource(corsConfigurationSource()).and()
+        )
         return http.formLogin().apply {
             loginPage("/login")
         }.and().build()
     }
+    // CORS 配置,非bean
+    fun corsConfigurationSource(): CorsConfigurationSource {
+        val config = CorsConfiguration()
+        config.addAllowedOrigin("*")
+        config.addAllowedHeader("*")
+        config.addAllowedMethod("*")
+        val source = UrlBasedCorsConfigurationSource()
+        source.registerCorsConfiguration("/**", config)
+        return source
+    }
+
 
     /**
      * jwk目前与内存绑定，每次启动时创建

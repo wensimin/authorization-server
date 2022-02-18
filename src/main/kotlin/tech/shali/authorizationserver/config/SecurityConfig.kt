@@ -1,11 +1,15 @@
 package tech.shali.authorizationserver.config
 
+import com.nimbusds.jose.jwk.source.JWKSource
+import com.nimbusds.jose.proc.SecurityContext
 import org.springframework.context.annotation.Bean
 import org.springframework.http.HttpMethod
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
+import org.springframework.security.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration
 import org.springframework.security.core.Authentication
 import org.springframework.security.oauth2.core.OAuth2TokenType
+import org.springframework.security.oauth2.jwt.JwtDecoder
 import org.springframework.security.oauth2.server.authorization.JwtEncodingContext
 import org.springframework.security.oauth2.server.authorization.OAuth2TokenCustomizer
 import org.springframework.security.web.SecurityFilterChain
@@ -32,11 +36,20 @@ class SecurityConfig {
                 //register matcher
                 mvcMatchers(HttpMethod.POST, "/user/**").hasAuthority(SysAuth.ADMIN.name)
                 anyRequest().authenticated()
-            }.and().formLogin().apply {
+
+            } //OAUTH2 server配置,似乎只对userinfo端口起效
+//            .and().oauth2ResourceServer().jwt().and()
+            .and().formLogin().apply {
                 loginPage("/login")
             }
         return http.build()
     }
+
+    // jwt decoder 配置oauth2 rs必须
+//    @Bean
+//    fun jwtDecoder(jwkSource: JWKSource<SecurityContext?>?): JwtDecoder? {
+//        return OAuth2AuthorizationServerConfiguration.jwtDecoder(jwkSource)
+//    }
 
 
     /**

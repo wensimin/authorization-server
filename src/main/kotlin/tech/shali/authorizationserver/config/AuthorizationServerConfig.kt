@@ -68,7 +68,7 @@ class AuthorizationServerConfig {
             if (!it.exists()) {
                 createRSAKey()
             } else {
-                JWK.parse(it.file.readText()).toRSAKey()
+                JWK.parse(it.inputStream.reader().readText()).toRSAKey()
             }
         }
     }

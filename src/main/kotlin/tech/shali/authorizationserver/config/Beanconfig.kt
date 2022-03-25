@@ -16,5 +16,4 @@ class BeanConfig {
      */
     @Bean
     fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
-
 }

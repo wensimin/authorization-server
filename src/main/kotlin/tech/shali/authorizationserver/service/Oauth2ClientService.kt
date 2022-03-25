@@ -70,11 +70,12 @@ class Oauth2ClientService(
             clientSecret(oauth2Client.clientSecret)
             authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
             authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
+            //允许client login
             if (oauth2Client.clientCredentials) authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
             redirectUris {
                 it.addAll(oauth2Client.redirectUri.split(","))
             }
-            scope(OidcScopes.OPENID)
+            scopes { it.addAll(setOf(OidcScopes.OPENID, OidcScopes.PROFILE)) }
             tokenSettings(
                 TokenSettings.builder().apply {
                     accessTokenTimeToLive(Duration.ofHours(1))

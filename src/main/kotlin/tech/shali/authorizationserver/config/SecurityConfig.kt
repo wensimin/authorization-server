@@ -34,6 +34,8 @@ class SecurityConfig {
                 //register matcher
                 mvcMatchers(HttpMethod.POST, "/user/**").hasAuthority(SysAuth.ADMIN.name)
                 anyRequest().authenticated()
+            }.and().formLogin().apply {
+                loginPage("/login")
             }.and().oauth2ResourceServer().jwt()
         return http.build()
     }

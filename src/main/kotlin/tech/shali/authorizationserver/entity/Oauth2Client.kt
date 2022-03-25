@@ -34,5 +34,7 @@ class Oauth2Client(
      * 是否允许client模式登录
      */
     @Column(nullable = false)
-    var clientCredentials: Boolean = false
+    var clientCredentials: Boolean = false,
+    val accessTokenLive: Long? = null,
+    val refreshTokenLive: Long? = null
 ) : Data()

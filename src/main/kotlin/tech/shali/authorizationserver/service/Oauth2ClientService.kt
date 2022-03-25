@@ -78,8 +78,16 @@ class Oauth2ClientService(
             scopes { it.addAll(setOf(OidcScopes.OPENID, OidcScopes.PROFILE)) }
             tokenSettings(
                 TokenSettings.builder().apply {
-                    accessTokenTimeToLive(Duration.ofHours(1))
-                    refreshTokenTimeToLive(Duration.ofDays(30))
+                    accessTokenTimeToLive(
+                        Duration.ofMillis(
+                            oauth2Client.accessTokenLive ?: Duration.ofHours(1).toMillis()
+                        )
+                    )
+                    refreshTokenTimeToLive(
+                        Duration.ofMillis(
+                            oauth2Client.refreshTokenLive ?: Duration.ofDays(30).toMillis()
+                        )
+                    )
                 }.build()
             )
             // 需要用户允许 请求scope仅openid时不会触发

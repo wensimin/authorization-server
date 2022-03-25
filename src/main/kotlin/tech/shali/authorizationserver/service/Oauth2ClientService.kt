@@ -8,6 +8,7 @@ import org.springframework.security.oauth2.server.authorization.client.Registere
 import org.springframework.security.oauth2.server.authorization.config.ClientSettings
 import org.springframework.security.oauth2.server.authorization.config.TokenSettings
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import tech.shali.authorizationserver.dao.Oauth2ClientDao
 import tech.shali.authorizationserver.entity.Oauth2Client
 import tech.shali.authorizationserver.entity.SysAuth
@@ -23,7 +24,7 @@ class Oauth2ClientService(
     RegisteredClientRepository {
 
     override fun save(registeredClient: RegisteredClient) {
-        throw TODO("未实现new client")
+        throw RuntimeException("未实现new client")
     }
 
     override fun findById(id: String): RegisteredClient? {
@@ -37,6 +38,7 @@ class Oauth2ClientService(
     /**
      * new client
      */
+    @Transactional
     fun create(oauth2Client: Oauth2Client): Oauth2Client {
         // 如果允许client模式登录则需要同时建立user
         if (oauth2Client.clientCredentials) {
@@ -60,15 +62,24 @@ class Oauth2ClientService(
             clientSecret(oauth2Client.clientSecret)
             authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
             authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
+            //允许client login
             if (oauth2Client.clientCredentials) authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
             redirectUris {
                 it.addAll(oauth2Client.redirectUri.split(","))
             }
-            scope(OidcScopes.OPENID)
+            scopes { it.addAll(setOf(OidcScopes.OPENID, OidcScopes.PROFILE)) }
             tokenSettings(
                 TokenSettings.builder().apply {
-                    accessTokenTimeToLive(Duration.ofHours(1))
-                    refreshTokenTimeToLive(Duration.ofDays(30))
+                    accessTokenTimeToLive(
+                        Duration.ofMillis(
+                            oauth2Client.accessTokenLive ?: Duration.ofHours(1).toMillis()
+                        )
+                    )
+                    refreshTokenTimeToLive(
+                        Duration.ofMillis(
+                            oauth2Client.refreshTokenLive ?: Duration.ofDays(30).toMillis()
+                        )
+                    )
                 }.build()
             )
             // 需要用户允许 请求scope仅openid时不会触发

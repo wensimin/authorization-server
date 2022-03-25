@@ -96,12 +96,12 @@ class JdbcOAuth2AuthorizationService(
                 entity.authorizationCodeIssuedAt,
                 entity.authorizationCodeExpiresAt
             )
-            builder.token(authorizationCode,
-                { metadata: MutableMap<String?, Any?> ->
-                    metadata.putAll(
-                        parseMap(entity.authorizationCodeMetadata)
-                    )
-                })
+            builder.token(authorizationCode
+            ) { metadata: MutableMap<String?, Any?> ->
+                metadata.putAll(
+                    parseMap(entity.authorizationCodeMetadata)
+                )
+            }
         }
         if (entity.accessToken != null) {
             val accessToken = OAuth2AccessToken(
@@ -110,12 +110,12 @@ class JdbcOAuth2AuthorizationService(
                 entity.accessTokenIssuedAt,
                 entity.accessTokenExpiresAt
             )
-            builder.token(accessToken,
-                { metadata: MutableMap<String?, Any?> ->
-                    metadata.putAll(
-                        parseMap(entity.accessTokenMetadata)
-                    )
-                })
+            builder.token(accessToken
+            ) { metadata: MutableMap<String?, Any?> ->
+                metadata.putAll(
+                    parseMap(entity.accessTokenMetadata)
+                )
+            }
         }
         if (entity.refreshToken != null) {
             val refreshToken = OAuth2RefreshToken(
@@ -123,12 +123,12 @@ class JdbcOAuth2AuthorizationService(
                 entity.refreshTokenIssuedAt,
                 entity.refreshTokenExpiresAt
             )
-            builder.token(refreshToken,
-                { metadata: MutableMap<String?, Any?> ->
-                    metadata.putAll(
-                        parseMap(entity.refreshTokenMetadata)
-                    )
-                })
+            builder.token(refreshToken
+            ) { metadata: MutableMap<String?, Any?> ->
+                metadata.putAll(
+                    parseMap(entity.refreshTokenMetadata)
+                )
+            }
         }
         if (entity.idToken != null) {
             val idToken = OidcIdToken(
@@ -137,12 +137,12 @@ class JdbcOAuth2AuthorizationService(
                 entity.idTokenExpiresAt,
                 parseMap(entity.idTokenClaims)
             )
-            builder.token(idToken,
-                { metadata: MutableMap<String?, Any?> ->
-                    metadata.putAll(
-                        parseMap(entity.idTokenMetadata)
-                    )
-                })
+            builder.token(idToken
+            ) { metadata: MutableMap<String?, Any?> ->
+                metadata.putAll(
+                    parseMap(entity.idTokenMetadata)
+                )
+            }
         }
         return builder.build()
     }

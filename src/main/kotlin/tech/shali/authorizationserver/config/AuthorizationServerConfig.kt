@@ -12,7 +12,9 @@ import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
 import org.springframework.core.io.ClassPathResource
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
+import org.springframework.security.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration
 import org.springframework.security.config.annotation.web.configurers.oauth2.server.authorization.OAuth2AuthorizationServerConfigurer
+import org.springframework.security.oauth2.jwt.JwtDecoder
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsent
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsentService
 import org.springframework.security.oauth2.server.authorization.config.ProviderSettings
@@ -53,12 +55,20 @@ class AuthorizationServerConfig {
         return JWKSource { jwkSelector, _ -> jwkSelector.select(jwkSet) }
     }
 
+    /**
+     * oauth2 rs 所需decoder
+     */
+    @Bean
+    fun jwtDecoder(jwkSource: JWKSource<SecurityContext?>?): JwtDecoder {
+        return OAuth2AuthorizationServerConfiguration.jwtDecoder(jwkSource)
+    }
+
     private fun getRsaKey(): RSAKey {
         return ClassPathResource("jwk.json").let { it ->
             if (!it.exists()) {
                 createRSAKey()
             } else {
-                JWK.parse(it.file.readText()).toRSAKey()
+                JWK.parse(it.inputStream.reader().readText()).toRSAKey()
             }
         }
     }

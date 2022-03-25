@@ -8,6 +8,7 @@ import org.springframework.security.oauth2.server.authorization.client.Registere
 import org.springframework.security.oauth2.server.authorization.config.ClientSettings
 import org.springframework.security.oauth2.server.authorization.config.TokenSettings
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import tech.shali.authorizationserver.dao.Oauth2ClientDao
 import tech.shali.authorizationserver.entity.Oauth2Client
 import tech.shali.authorizationserver.entity.SysAuth
@@ -23,17 +24,7 @@ class Oauth2ClientService(
     RegisteredClientRepository {
 
     override fun save(registeredClient: RegisteredClient) {
-        create(
-            Oauth2Client(
-                registeredClient.clientId,
-                registeredClient.clientSecret!!,
-                registeredClient.redirectUris.joinToString(",")
-            ).apply {
-                clientCredentials =
-                    registeredClient.authorizationGrantTypes.contains(AuthorizationGrantType.CLIENT_CREDENTIALS)
-                id = registeredClient.id
-            }
-        )
+        throw RuntimeException("未实现new client")
     }
 
     override fun findById(id: String): RegisteredClient? {
@@ -47,6 +38,7 @@ class Oauth2ClientService(
     /**
      * new client
      */
+    @Transactional
     fun create(oauth2Client: Oauth2Client): Oauth2Client {
         // 如果允许client模式登录则需要同时建立user
         if (oauth2Client.clientCredentials) {

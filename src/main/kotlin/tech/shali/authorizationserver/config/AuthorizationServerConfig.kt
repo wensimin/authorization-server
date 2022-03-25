@@ -12,7 +12,9 @@ import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
 import org.springframework.core.io.ClassPathResource
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration
+import org.springframework.security.config.annotation.web.configurers.oauth2.server.authorization.OAuth2AuthorizationServerConfigurer
+import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsent
+import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsentService
 import org.springframework.security.oauth2.server.authorization.config.ProviderSettings
 import org.springframework.security.web.SecurityFilterChain
 import java.security.KeyPairGenerator
@@ -26,9 +28,17 @@ class AuthorizationServerConfig {
 
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
-    @Throws(Exception::class)
-    fun authorizationServerSecurityFilterChain(http: HttpSecurity): SecurityFilterChain? {
-        OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http)
+    fun authorizationServerSecurityFilterChain(http: HttpSecurity): SecurityFilterChain {
+        OAuth2AuthorizationServerConfigurer<HttpSecurity>().run {
+            authorizationEndpoint {
+                it.consentPage("/oauth2/consent")
+            }
+            http
+                .requestMatcher(endpointsMatcher)
+                .authorizeRequests { it.anyRequest().authenticated() }
+                .csrf { it.ignoringRequestMatchers(endpointsMatcher) }
+                .apply(this)
+        }
         return http.formLogin().apply {
             loginPage("/login")
         }.and().build()
@@ -65,6 +75,18 @@ class AuthorizationServerConfig {
             .build()
     }
 
+    /**
+     * 记住用户已授权的scope service,这里设置为不进行记住
+     */
+    @Bean
+    fun authorizationConsentService(): OAuth2AuthorizationConsentService {
+        return object : OAuth2AuthorizationConsentService {
+            override fun save(authorizationConsent: OAuth2AuthorizationConsent?) {}
+            override fun remove(authorizationConsent: OAuth2AuthorizationConsent?) {}
+            override fun findById(registeredClientId: String?, principalName: String?): OAuth2AuthorizationConsent? =
+                null
+        }
+    }
 
     // 和temple库冲突 使用\$
     @Bean

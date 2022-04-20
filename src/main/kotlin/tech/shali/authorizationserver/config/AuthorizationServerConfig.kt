@@ -65,10 +65,10 @@ class AuthorizationServerConfig {
 
     private fun getRsaKey(): RSAKey {
         return ClassPathResource("jwk.json").let { it ->
-            if (!it.exists()) {
-                createRSAKey()
+            if (it.exists()) {
+                JWK.parse(it.inputStream.use { it.reader().readText() }).toRSAKey()
             } else {
-                JWK.parse(it.inputStream.reader().readText()).toRSAKey()
+                createRSAKey()
             }
         }
     }
